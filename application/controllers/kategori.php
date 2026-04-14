@@ -7,110 +7,95 @@ class Kategori extends CI_Controller {
     {
         parent::__construct();
         $this->load->model('kategori_model');
-        $this->load->library('form_validation');
+        $this->load->library('session');
     }
 
+    // ======================
+    // TAMPIL DATA
+    // ======================
     public function index()
     {
-        $data['title'] = 'Data Kategori';
         $data['kategori'] = $this->kategori_model->get_all();
-        
-        $this->load->view('templates/header', $data);
+
+        $this->load->view('templates/header');
         $this->load->view('templates/sidebar');
         $this->load->view('templates/topbar');
         $this->load->view('kategori/index', $data);
         $this->load->view('templates/footer');
     }
 
+    // ======================
+    // FORM TAMBAH
+    // ======================
     public function tambah()
     {
-        $data['title'] = 'Tambah Kategori';
-        
-        $this->load->view('templates/header', $data);
+        $this->load->view('templates/header');
         $this->load->view('templates/sidebar');
         $this->load->view('templates/topbar');
         $this->load->view('kategori/tambah');
         $this->load->view('templates/footer');
     }
 
+    // ======================
+    // SIMPAN DATA
+    // ======================
     public function simpan()
     {
-        $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required|is_unique[kategori.nama_kategori]');
-        
-        if ($this->form_validation->run() == FALSE) {
-            $data['title'] = 'Tambah Kategori';
-            $this->load->view('templates/header', $data);
-            $this->load->view('templates/sidebar');
-            $this->load->view('templates/topbar');
-            $this->load->view('kategori/tambah');
-            $this->load->view('templates/footer');
-        } else {
-            $data = ['nama_kategori' => $this->input->post('nama_kategori')];
-            $this->kategori_model->insert($data);
-            $this->session->set_flashdata('success', 'Kategori berhasil ditambahkan');
-            redirect('kategori');
-        }
+        $data = [
+            'nama_kategori' => $this->input->post('nama_kategori')
+        ];
+
+        $this->kategori_model->insert($data);
+        $this->session->set_flashdata('success', 'Kategori berhasil ditambahkan');
+
+        redirect('kategori');
     }
 
+    // ======================
+    // HAPUS DATA
+    // ======================
+    public function hapus($id)
+    {
+        $this->kategori_model->delete($id);
+        $this->session->set_flashdata('success', 'Data berhasil dihapus');
+
+        redirect('kategori');
+    }
+
+    // ======================
+    // FORM EDIT
+    // ======================
     public function edit($id)
     {
-        $data['title'] = 'Edit Kategori';
         $data['kategori'] = $this->kategori_model->get_by_id($id);
-        
-        if (empty($data['kategori'])) {
-            $this->session->set_flashdata('error', 'Kategori tidak ditemukan');
-            redirect('kategori');
-        }
-        
-        $this->load->view('templates/header', $data);
+
+        $this->load->view('templates/header');
         $this->load->view('templates/sidebar');
         $this->load->view('templates/topbar');
         $this->load->view('kategori/edit', $data);
         $this->load->view('templates/footer');
     }
 
+    // ======================
+    // UPDATE DATA
+    // ======================
     public function update($id)
     {
-        $kategori = $this->kategori_model->get_by_id($id);
-        
-        if (empty($kategori)) {
-            $this->session->set_flashdata('error', 'Kategori tidak ditemukan');
-            redirect('kategori');
-        }
-        
+        $this->load->library('form_validation');
         $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'required');
-        
-        if ($this->input->post('nama_kategori') != $kategori->nama_kategori) {
-            $this->form_validation->set_rules('nama_kategori', 'Nama Kategori', 'is_unique[kategori.nama_kategori]');
-        }
-        
+
         if ($this->form_validation->run() == FALSE) {
-            $data['title'] = 'Edit Kategori';
-            $data['kategori'] = $kategori;
-            $this->load->view('templates/header', $data);
-            $this->load->view('templates/sidebar');
-            $this->load->view('templates/topbar');
-            $this->load->view('kategori/edit', $data);
-            $this->load->view('templates/footer');
+            // kalau gagal validasi, kembali ke edit
+            $this->edit($id);
         } else {
-            $data = ['nama_kategori' => $this->input->post('nama_kategori')];
+            $data = [
+                'nama_kategori' => $this->input->post('nama_kategori')
+            ];
+
             $this->kategori_model->update($id, $data);
-            $this->session->set_flashdata('success', 'Kategori berhasil diupdate');
+            $this->session->set_flashdata('success', 'Data berhasil diupdate');
+
             redirect('kategori');
         }
-    }
-
-    public function hapus($id)
-    {
-        $kategori = $this->kategori_model->get_by_id($id);
-        
-        if (empty($kategori)) {
-            $this->session->set_flashdata('error', 'Kategori tidak ditemukan');
-        } else {
-            $this->kategori_model->delete($id);
-            $this->session->set_flashdata('success', 'Kategori berhasil dihapus');
-        }
-        
-        redirect('kategori');
     }
 }
