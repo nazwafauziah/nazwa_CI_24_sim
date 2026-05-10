@@ -1,4 +1,5 @@
 <?php
+defined('BASEPATH') OR exit('No direct script access allowed');
 
 class auth extends CI_Controller{
 
@@ -18,13 +19,13 @@ class auth extends CI_Controller{
         $username= $this->input->post('username');
         $password= $this->input->post('password');
 
-        $user= $this->auth_model->cek_login($username, $password);
+        $user= $this->auth_model->cek_login($username,$password);
 
         if($user){
             $data=[
-                'id_user'=> $user->id,
-                'username'=> $user->username,
-                'role'=> $user->role,
+                'id_user'=>$user->id,
+                'username'=>$user->username,
+                'role'=>$user->role,
                 'login'=> TRUE
             ];
 
@@ -33,13 +34,14 @@ class auth extends CI_Controller{
             $this->auth_model->update_last_login($user->id);
             redirect('dashboard');
         }else{
-            $this->session->set_flashdata('error', 'username dan password salah');
+            $this->session->set_flashdata('error','username atau password salah');
             redirect('login');
         }
     }
+
     public function logout()
     {
-        $this->session->sess_destroy();
+        $this->session->session_destroy();
         redirect('login');
     }
 }
